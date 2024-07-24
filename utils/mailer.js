@@ -1,4 +1,5 @@
 var nodmailer = require('nodemailer')
+require('dotenv').config()
 /* module.exports = function mailerReset (reciver, tk) {
 
     const transporter = nodmailer.createTransport({
@@ -33,7 +34,7 @@ exports.mailerReset = async (reciver, token) => {
         service: 'gmail',
         auth: {
             user: 'ourwa94svu@gmail.com' ,
-            pass:  'fecjhtikbasguifz',
+            pass:  process.env.GOOGLE_MAIL,
         }
     })
     
