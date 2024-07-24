@@ -46,7 +46,7 @@ const seq = new Sequelize(
 const Database = (async () => {
   try {
     // التحقق من صحة الاتصال بقاعدة البيانات
-    await seq.authenticate();
+    //await seq.authenticate();
     console.log('DB Created Successfully .. ourwaMWT');
     // مزامنة قاعدة البيانات (تعديل الجداول إذا لزم الأمر)
     await seq.sync({ alter: true });

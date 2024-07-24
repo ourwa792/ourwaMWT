@@ -35,7 +35,7 @@
         <script>
             $(document).ready(function () {
 
-                const json = <% - JSON.stringify(quiz.quizSchema) %> ;
+                const json = <%- JSON.stringify(quiz.quizSchema) %> ;
                 json.id = <%= quiz.id %> ; // تضمين معرف الكويز في JSON      
 
 

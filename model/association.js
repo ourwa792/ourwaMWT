@@ -42,6 +42,8 @@ QuizResult.belongsTo(User);
 //User.hasMany(Resources)
 //Resources.belongsTo(User,{constraints: true, onDelete: 'CASCADE'})
 
+
+
 module.exports = { User, FeedBack, Lesson, Category, sequelize, Op,
     VideoLesson, Quiz, Resources, QuizResult
 }
