@@ -1,0 +1,194 @@
+<%- include('../partial/head.ejs') %>
+
+    <link rel="stylesheet" href="/css/toastify.min.css" />
+    <script lang="text/javascript" src="/library/toastify-js.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+      body {
+        background-color: #f0f8ff; /* لون خلفية مبهج */
+    }
+    .upload-container {
+    margin-top: 50px;
+  }
+  .upload-form {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .form-group label {
+    font-weight: bold;
+    color: #007bff; /* لون النص */
+  }
+  .file-hint {
+    color: #6c757d;
+    font-size: 0.9rem;
+    display: block; /* عرض التعليمات في سطر منفصل */
+    margin-top: 5px; /* مسافة بين التعليمات وحقل الإدخال */
+  }
+  .btn-primary {
+    background-color: #2f9ef3;
+    border: none;
+  }
+  .btn-primary:hover {
+    background-color: #5bfaff;
+    cursor: pointer;
+  }
+  .btn-secondary {
+    background-color: #98cfff;
+    border: none;
+  }
+  .btn-secondary:hover {
+    background-color: #5bfaff;
+    cursor: pointer;
+  }
+  .header-icon {
+    font-size: 3rem;
+    color: #007bff;
+    margin-bottom: 20px;
+  }
+  .btn-block {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .btn-block + .btn-block {
+    margin-top: 10px;
+  }
+  .text-center img {
+    width: 75px;
+    height: 75px;
+  }
+  .loading-spinner {
+        display: none;
+        font-size: 24px;
+        margin-top: 10px;
+    }
+    </style>
+    </head>
+
+    <body>
+
+        <div class="container mt-5">
+            <% if (error_msg && error_msg.length> 0) { %>
+                <div class="alert alert-danger">
+                    <% error_msg.forEach(function(err) { %>
+                        <p>
+                            <%= err %>
+                        </p>
+                        <% }); %>
+                </div>
+                <% } %>
+        </div>
+        <div class="container upload-container">
+            <div class="text-center">
+              <i><img src="/icon/iconUpload.png" class="bi d-block mx-auto mb-1"></i> <!-- أيقونة -->
+              <h1 class="text-center mb-4">رفع مصدر تعليمي</h1>
+            </div>
+            <div class="row justify-content-center">
+              <div class="col-md-8">
+                <form action="/resources/upload" method="POST" class="upload-form" novalidate enctype="multipart/form-data" onsubmit="return validateFile()" >
+                  <div class="form-group my-3 m-xl-1">
+                    <label for="title">عنوان المرفق</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                  </div>
+                  <div class="form-group mb-4 my-3 m-xl-1">
+                    <label for="file">اختر ملف</label>
+                    <input type="file" class="form-control-file" id="file" name="file" required>
+                    <small class="file-hint">حجم الملف لا يجب أن يتجاوز 5 ميغابايت</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="thumbnail">صورة مصغرة (اختياري)</label>
+                    <input type="file" class="form-control-file" id="thumbnail" name="thumbnail">
+                    <small class="file-hint">حجم الصورة المصغرة لا يجب أن يتجاوز 2 ميغابايت</small>
+                  </div>
+
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-block px-3 rounded-3">Upload</button>
+                    <div class="loading-spinner" id="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> جاري التحميل...
+                    </div>
+                </div>
+
+                </form>
+                <a href="/resources" class="btn btn-secondary btn-block mt-2">عودة لصفحة المصادر</a>
+              </div>
+            </div>
+          </div>
+
+
+
+
+        <script>
+            function validateFile() {
+               /*  const fileInput = document.getElementById('file');
+
+                const thumbnailInput = document.getElementById('thumbnail');
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/msword', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'application/vnd.ms-powerpoint'];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                const thumbnailMaxSize = 2 * 1024 * 1024; // 2MB
+
+                if (fileInput.files.length > 1) {
+                    alert('Please select only one file.');
+                    fileInput.value = '';
+                    return false;
+                }
+                if (fileInput.files.length == 0) {
+                    alert('Please select file.');
+                    fileInput.value = '';
+                    return false;
+                }
+
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Unsupported file type.');
+                        fileInput.value = '';
+                        return false;
+                    }
+                    if (file.size > maxSize) {
+                        alert('File size exceeds the limit of 5MB.');
+                        fileInput.value = '';
+                        return false;
+                    }
+                }
+
+                if (thumbnailInput.files.length > 1) {
+                    alert('Please select only one thumbnail.');
+                    thumbnailInput.value = '';
+                    return false;
+                }
+
+                if (thumbnailInput.files.length > 0) {
+                    const thumbnail = thumbnailInput.files[0];
+                    if (!thumbnail.type.startsWith('image/')) {
+                        alert('Unsupported thumbnail type.');
+                        thumbnailInput.value = '';
+                        return false;
+                    }
+                    if (thumbnail.size > thumbnailMaxSize) {
+                        alert('Thumbnail size exceeds the limit of 2MB.');
+                        thumbnailInput.value = '';
+                        return false;
+                    }
+                }
+ */
+                // show SPinner
+                document.getElementById('loading-spinner').style.display = 'block';
+
+                // Reset inputs after submission
+                /* setTimeout(() => {
+                    fileInput.value = '';
+                    thumbnailInput.value = '';
+                }, 1000); */
+
+                //return true;
+            }
+        </script>
+
+
+        <%- include('../partial/end.ejs') %>

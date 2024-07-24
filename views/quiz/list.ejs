@@ -1,0 +1,62 @@
+
+<%- include('../partial/head.ejs') %>
+<script lang="text/javascript" src="/library/jquery.min.js"></script>
+
+</head>
+<body>
+
+  <%- include('../partial/navBar.ejs') %>
+
+  <div class="container">
+    <h1>قائمة الاختبارات</h1>
+    <div class="form-group">
+      <label for="difficultyFilter">فلتر حسب الصعوبة :</label>
+      <select id="difficultyFilter" class="form-control my-3">
+        <option value="all">All</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div id="quizList">
+      <% quizzes.forEach(quiz => { %>
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title"><%= quiz.title %></h5>
+            <p class="card-text">الصعوبة : <%= quiz.difficulty %></p>
+            <p class="card-text">Tag: <%= quiz.tag %></p>
+            <p class="card-text">الدرجة القصوى : <%= quiz.maxScore %></p>
+            <a href="/quiz/take/<%= quiz.id %>" class="btn btn-success"> خذ اختبار</a>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+
+  <script>
+    $('#difficultyFilter').change(function() {
+      const selectedDifficulty = $(this).val();
+      $.get(`/quiz/filter?difficulty=${selectedDifficulty}`, function(data) {
+        console.log(data)
+        $('#quizList').html('');
+        data.quizzes.forEach(quiz => {
+          $('#quizList').append(`
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">${quiz.title}</h5>
+                <p class="card-text">الصعوبة: ${quiz.difficulty}</p>
+                <p class="card-text">Tag: ${quiz.tag}</p>
+                <p class="card-text"> اعلى درجة: ${quiz.maxScore}</p>
+                <a href="/quiz/take/${quiz.id}" class="btn btn-success">Take Quiz</a>
+              </div>
+            </div>
+          `);
+        });
+      });
+    });
+  </script>
+
+
+
+<%- include('../partial/end.ejs') %>

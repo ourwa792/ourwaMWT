@@ -1,0 +1,144 @@
+
+<%- include('../partial/head.ejs') %>
+
+<script src="/library/jquery.min.js"></script>
+<script src="/library/survey.jquery.min.js"></script>
+<script src="/library/survey.jquery.theme.index.min.js"></script>
+<link rel="stylesheet" href="/css/survey.css" /> 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/7.0.0/polyfill.min.js"></script>
+    <script>
+            window.MathJax = {
+            loader: { load: ['input/tex', 'output/chtml', 'input/mml'] },
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+  .correctAnswer{
+    color: green;
+  }
+  .incorrectAnswer{
+    color: red;
+  }
+</style>
+
+</head>
+<body>
+
+
+
+  <div class="container">
+    <h1>نتيجة اختبار</h1>
+    <h2><%= quiz.title %></h2>
+    <p>اسم المستخدم : <%= username %></p>
+    <p>النتيجة <%= userScore %> / <%= maxScore %></p>
+    <p>الإجابات الصحيحة : <%= correctAnswers %></p>
+    <p>الإجابات الخاطئة : <%= incorrectAnswers %></p>
+    <div id="surveyElement"></div>
+
+    <a href="/quiz/take/<%= quiz.id %>" class="btn btn-primary">إعادة الاختبار</a>
+
+    <% if (certificateUrl) { %>
+        <a href="<%= certificateUrl %>" class="btn btn-success" target="_blank" download>تحميل شهادتك</a>
+    <% } else { %>
+        <p>لم تحصل على شهادة</p>
+    <% } %>
+
+  </div>
+  <script>
+    $(document).ready(function () {
+      const json = <%- JSON.stringify(quiz.quizSchema) %> ;
+      const userAnswers = <%- JSON.stringify(resultSchems) %> ;
+
+      const survey = new Survey.Model(json);
+      survey.data = userAnswers;
+      survey.mode = "display";
+      survey.questionsOnPageMode = "singlePage";
+      survey.showProgressBar = "off";
+
+      const correctStr = "Correct";
+      const incorrectStr = "Incorrect";
+
+      function getTextHtml (text, str, isCorrect) {
+          if (text.indexOf(str) < 0)
+              return undefined;
+
+          return text.substring(0, text.indexOf(str)) +
+              "<span class='" +  (isCorrect ? "correctAnswer" : "incorrectAnswer" ) + "'>" +
+                  str +
+              "</span>";
+      }
+
+      function changeTitle (q) {
+          if (!q) return;
+
+          const isCorrect = q.isAnswerCorrect();
+          if (!q.prevTitle) {
+              q.prevTitle = q.title;
+          }
+          if (isCorrect === undefined) {
+              q.title = q.prevTitle;
+          }
+          q.title =  q.prevTitle + ' ' + (isCorrect ? correctStr : incorrectStr);
+      }
+
+      survey.onTextMarkdown.add((_, options) => {
+          const text = options.text;
+          let html = getTextHtml(text, correctStr, true);
+          if (!html) {
+              html = getTextHtml(text, incorrectStr, false);
+          }
+          if (!!html) {
+              options.html = html;
+          }
+      });
+
+      survey.getAllQuestions().forEach(question => changeTitle(question));
+       // إعادة معالجة MathJax بعد عرض الأسئلة
+       survey.onAfterRenderQuestion.add((survey, options) => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise().catch(function (err) {
+                        console.error('MathJax typeset failed: ' + err.message);
+                    });
+                }
+            });
+        survey.onAfterRenderQuestionInput.add((survey, options) => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise().catch(function (err) {
+                        console.error('MathJax typeset failed: ' + err.message);
+                    });
+                }
+          });
+
+      $("#surveyElement").Survey({ model: survey });
+    });
+  </script>
+
+<%#- include('../partial/end.ejs') %>
+<!-- {
+    "elements": [{
+      "type": "image",
+      "name": "falconImage",
+      "imageLink": "https://surveyjs.io/Content/Images/examples/scored-quiz/millenium-falcon.jpg"
+    }, {
+      "type": "radiogroup",
+      "name": "qfifth",
+      "score": 1,
+      "startWithNewLine": false,
+      "title": "",
+      "correctAnswer": "falcon",
+      "choices": [{
+        "value": "corfe",
+        "text": "The Corfe Castle"
+      }, {
+        "value": "blackPearl",
+        "text": "The Black Pearl"
+      }, {
+        "value": "falcon",
+        "text": "The Millennium Falcon"
+      }]
+    }]
+} -->

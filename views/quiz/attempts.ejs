@@ -1,0 +1,136 @@
+<%- include('../partial/head.ejs') %>
+<script lang="text/javascript" src="/library/chart.js"></script>
+</head>
+
+<body>
+<div class="container">
+  <h1>Attempts</h1>
+  <h2>محاولاتك الحالية</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th >Quiz</th>
+        <th>Score</th>
+        <th>Attempts</th>
+        <th>Date</th>
+        <th>Certificate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% attempts.forEach(attempt => { %>
+        <tr>
+          <td><%= attempt.quiz.title %></td>
+          <td><%= attempt.userScore %> / <%= attempt.quiz.maxScore %></td>
+          <td><%= attempt.attempts %></td>
+          <td><%= new Date(attempt.quizDate).toLocaleDateString() %></td> 
+          <td>
+            <% if (attempt.certificateUrl) { %>
+              <a href="<%= attempt.certificateUrl %>" class="btn btn-success" download>Download Certificate</a>
+            <% } else { %>
+              N/A
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <h2>أفضل المتفوقين</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Total Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% userScores.forEach(userScore => { %>
+        <tr>
+          <td><%= userScore.user.userName %></td>
+          <td><%= userScore.dataValues.totalScore %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <h2>أداءك البياني</h2>
+  <div style="width: 100%; overflow-x: scroll;">
+    <canvas id="performanceChart"></canvas>
+  </div>
+
+  <script>
+    const performanceData = <%- JSON.stringify(performanceData) %>;
+
+    const attemptDates = performanceData.attempts.map(attempt => new Date(attempt.createdAt).toLocaleDateString());
+    const totalScores = performanceData.attempts.map(attempt => attempt.userScore);
+
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: attemptDates,
+        datasets: [
+          {
+            label: 'Total Scores Over Time ( % )',
+            data: totalScores,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              autoSkip: false,
+              maxRotation: 90,
+              minRotation: 45
+            }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100 // أقصى قيمة للنسبة المئوية هي 100
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+  </script>
+
+  <table class="table table-striped mt-4">
+    <thead>
+      <tr>
+        <th>عنوان الكويز</th>
+        <th>النقاط المكتسبة</th>
+        <th>النقاط الإجمالية</th>
+        <th>الإجابات الصحيحة</th>
+        <th>الإجابات الخاطئة</th>
+        <th>التاريخ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% performanceData.attempts.forEach(attempt => { %>
+        <tr>
+          <td><%= attempt.title %></td>
+          <td><%= attempt.userScore %></td>
+          <td><%= attempt.maxScore %></td>
+          <td><%= attempt.correctAnswers %></td>
+          <td><%= attempt.incorrectAnswers %></td>
+          <td><%= new Date(attempt.createdAt).toLocaleDateString() %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="mt-4">
+    <h2>التحليل الإحصائي</h2>
+    <p><strong>المعدل التراكمي للنقاط:</strong> <%= performanceData.averageScore %></p>
+    <p><strong>متوسط الإجابات الصحيحة:</strong> <%= performanceData.averageCorrectAnswers %></p>
+    <p><strong>متوسط الإجابات الخاطئة:</strong> <%= performanceData.averageIncorrectAnswers %></p>
+  </div>
+</div>
+<%- include('../partial/end.ejs') %>

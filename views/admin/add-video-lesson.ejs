@@ -1,0 +1,177 @@
+<%- include('../partial/head.ejs') %>
+<!-- custome style for loading --> 
+  <style>
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/css/toastify.min.css">
+  <script lang="text/javascript" src="/library/toastify-js.js"> </script>
+
+  </head>
+
+  <body>
+    <main class="container my-5">
+
+      <div id="messages"></div>
+      <div id="loading" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">جار التحميل...</span>
+        </div>
+      </div>
+
+      <h1 class="text-center mb-4">إضافة درس فيديو جديد</h1>
+
+      <form id="videoLessonForm" enctype="multipart/form-data" novalidate>
+        <div class="mb-3">
+          <label for="title" class="form-label">عنوان الدرس</label>
+          <input type="text" name="title" id="title" class="form-control" required>
+          <div class="text-danger" id="titleError"></div>
+        </div>
+        <div class="mb-3">
+          <label for="link" class="form-label">رابط الفيديو</label>
+          <input type="url" name="link" id="link" class="form-control" required>
+          <div class="text-danger" id="linkError"></div>
+        </div>
+        <div class="mb-3">
+          <label for="description" class="form-label">الوصف</label>
+          <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+          <div class="text-danger" id="descriptionError"></div>
+        </div>
+        <div class="mb-3">
+          <label for="grade" class="form-label">الصف</label>
+          <input type="text" name="grade" id="grade" class="form-control" required>
+          <div class="text-danger" id="gradeError"></div>
+        </div>
+        <div class="mb-3">
+          <label for="thumbnail" class="form-label">الصورة المصغرة (اختياري)</label>
+          <input type="file" name="thumbnail" id="thumbnail" class="form-control">
+          <div class="text-danger" id="thumbnailError"></div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">إضافة الدرس</button>
+      </form>
+
+    </main>
+
+    <a href="/admin/dashboard" class="btn btn-outline-info">
+      <img src="/icon/iconBack.png" class="bi d-block mx-auto mb-1" width="34" height="34">
+      <span> لوحة التحكم</span>
+    </a>
+
+    <script>
+      document.getElementById('videoLessonForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        document.getElementById('loading').style.display = 'block';
+        // إعادة تعيين الرسائل السابقة
+        document.getElementById('messages').innerHTML = '';
+        document.getElementById('titleError').textContent = '';
+        document.getElementById('linkError').textContent = '';
+        document.getElementById('descriptionError').textContent = '';
+        document.getElementById('gradeError').textContent = '';
+        document.getElementById('thumbnailError').textContent = '';
+
+        const thumbnailInput = document.getElementById('thumbnail');
+        const thumbnailMaxSize = 2 * 1024 * 1024; // 2MB
+
+
+        if (thumbnailInput.files.length > 1) {
+          Toastify({
+                    text: "اختر صورة واحدة فقط !",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top", // `top` or `bottom`
+                    position: "center", // `left`, `center` or `right`
+                    backgroundColor: "linear-gradient(to right, #f170a4, #f52a7c)",
+                    stopOnFocus: true, // Prevents dismissing of toast on hover
+                    }).showToast();          thumbnailInput.value = '';
+          document.getElementById('loading').style.display = 'none';
+          return false;
+        }
+
+        if (thumbnailInput.files.length > 0) {
+          const thumbnail = thumbnailInput.files[0];
+          if (!thumbnail.type.startsWith('image/')) {
+            Toastify({
+                        text: "نوع الملف غير مدعوم",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top", // `top` or `bottom`
+                        position: "center", // `left`, `center` or `right`
+                        backgroundColor: "linear-gradient(to right, #f170a4, #f52a7c)",
+                        stopOnFocus: true, // Prevents dismissing of toast on hover
+                    }).showToast();
+            thumbnailInput.value = '';
+            document.getElementById('loading').style.display = 'none';
+            return false;
+          }
+          if (thumbnail.size > thumbnailMaxSize) {
+            Toastify({
+                        text: "حجم الصورة اكبر من 2 ميغا",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top", // `top` or `bottom`
+                        position: "center", // `left`, `center` or `right`
+                        backgroundColor: "linear-gradient(to right, #f170a4, #f52a7c)",
+                        stopOnFocus: true, // Prevents dismissing of toast on hover
+                    }).showToast();
+            thumbnailInput.value = '';
+            document.getElementById('loading').style.display = 'none';
+            return false;
+          }
+        }
+
+        const formData = new FormData(this);
+
+        try {
+          const response = await fetch('/admin/api/add-video-lesson', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+          console.log(result)
+          document.getElementById('messages').innerHTML = '';
+
+          if (response.status === 201) {
+            // عرض رسالة النجاح
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success';
+            successDiv.textContent = result.successMessage;
+            document.getElementById('messages').appendChild(successDiv);
+            this.reset();
+          } else {
+            // عرض رسائل الأخطاء
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.textContent = result.errorMessage;
+            document.getElementById('messages').appendChild(errorDiv);
+
+            // عرض أخطاء التحقق لكل حقل
+            result.validationErrors.forEach(error => {
+              const errorField = document.getElementById(error.path + 'Error');
+              if (errorField) {
+                errorField.textContent = error.msg;
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'alert alert-danger';
+          errorDiv.textContent = 'حدث خطأ ما، يرجى المحاولة مرة أخرى.';
+          document.getElementById('messages').appendChild(errorDiv);
+        } finally {
+          // اخفاء المؤشر
+          document.getElementById('loading').style.display = 'none';
+        }
+      });
+    </script>
+<!-- //الفالديشن من السيرفر تم -->
+
+<%- include('../partial/end.ejs') %>

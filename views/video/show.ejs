@@ -1,0 +1,143 @@
+<%- include('../partial/head.ejs') %>
+
+<link rel="stylesheet" href="/css/main.css" />
+<link rel="stylesheet" href="/css/video.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.css">
+
+
+<!-- تضمين MathJax -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+
+</head>
+
+<body class="container border border-info">
+    <%- include('../partial/navBar.ejs') %>
+
+    <div class="container-fluid pb-3">
+        <div class="d-grid gap-3" style="grid-template-columns: 2fr 1fr;">
+            <div class="bg-light border rounded-3 border border-info">
+                <img height="100%" width="100%" src="/image/panner/panner1.png">
+            </div>
+            <div class="bg-light border rounded-3">
+                <img height="100%" width="100%" src="/image/panner/panner2.jpg">
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+                <h1 class="me-3"><%= video.title %></h1>
+               
+            </div>
+        </div>
+        <h4><strong>الموضوع: <%= video.description %></strong><h4>
+        <p><strong>الصف :</strong> <%= video.grade %></p>
+        
+
+        <div class="video-container position-relative mb-4">
+            <video id="player" 
+                class="js-player w-100" playsinline controls>
+                
+            </video>
+            <div id="quiz-container" class="quiz-container">
+                <p id="quiz-question"></p>
+                <button id="quiz-option-1"></button>
+                <button id="quiz-option-2"></button>
+                <button id="quiz-option-3"></button>
+                <button id="quiz-option-4"></button>
+            </div>
+        </div>
+        <div class="score-container">
+            <p>Score: <span id="score">0</span></p>
+            <a href="/" class="btn btn-outline-info text-md-end">
+                <img src="/icon/iconBack.png" class="bi d-block mx-auto mb-1" width="34" height="34">
+                <span>الصفحة الرئيسية</span>
+            </a>
+        </div>
+    </div>
+
+    <%- include('../partial/end.ejs') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = new Plyr('#player');
+
+            player.source = {
+                type: 'video',
+                sources: [
+                    {
+                        src: '<%= video.link %>',
+                        type: 'video/mp4',
+                        provider: 'youtube'
+                    }
+                    ],
+                   
+                };
+            player.on('ready', () => {
+                player.play();
+            });  
+            const quizContainer = document.getElementById('quiz-container');
+            const quizQuestion = document.getElementById('quiz-question');
+            const quizOptions = [
+                document.getElementById('quiz-option-1'),
+                document.getElementById('quiz-option-2'),
+                document.getElementById('quiz-option-3'),
+                document.getElementById('quiz-option-4')
+            ];
+            const scoreElement = document.getElementById('score');
+            let score = 0;
+            const quizzes = JSON.parse('<%- JSON.stringify(video.quizess) %>');
+
+            function adjustQuizContainer() {
+                const videoRect = player.elements.container.getBoundingClientRect();
+                quizContainer.style.width = '100%';
+                quizContainer.style.height = '100%';
+                quizContainer.style.top = 0;
+                quizContainer.style.left = 0;
+            }
+
+            player.on('timeupdate', (event) => {
+                const currentTime = Math.floor(player.currentTime);
+                quizzes.forEach(quiz => {
+                    if (currentTime === quiz.time && !quiz.asked) {
+                        showQuiz(quiz);
+                        player.pause();
+                    }
+                });
+            });
+
+            function showQuiz(quiz) {
+                quiz.asked = true;
+                quizQuestion.innerHTML = quiz.question;
+                quizOptions.forEach((option, index) => {
+                    option.innerHTML = quiz.options[index];
+                    option.className = ''; // Reset class
+                    option.onclick = () => checkAnswer(index, quiz.correct - 1, option);
+                });
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, quizContainer]); // إعادة معالجة MathJax
+                adjustQuizContainer();
+                quizContainer.style.display = 'block';
+            }
+
+            function checkAnswer(selectedIndex, correctIndex, option) {
+                if (selectedIndex === correctIndex) {
+                    option.classList.add('correct');
+                    score++;
+                    scoreElement.textContent = score;
+                } else {
+                    option.classList.add('incorrect');
+                    quizOptions[correctIndex].classList.add('correct');
+                }
+                setTimeout(() => {
+                    quizContainer.style.display = 'none';
+                    player.play();
+                }, 2000); // Wait 2 seconds before resuming video
+            }
+
+            window.addEventListener('resize', adjustQuizContainer);
+            adjustQuizContainer();
+
+        });
+    </script>
+
