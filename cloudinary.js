@@ -1,12 +1,4 @@
-/* require ('dotenv').config()
 
-const cloudinary = require('cloudinary').v2
-
-cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET
-}) */
 
 //cloudinary.api.root_folders().then(res => console.log(res));
 
@@ -19,49 +11,27 @@ cloudinary.config({
 .then (res => console.log(res))
 .catch (err => console.log(err)); */
 
-/* cloudinary.uploader.destroy('qtns9vji1byfg3ubrlok.pdf')
-.then(res => console.log(res))
-.catch(er => console.log(er)) */
-
 /* cloudinary.v2.uploader.upload_large("my_large_video.mp4", 
     { resource_type: "video" }, 
    function(error, result) {console.log(result, error); }); */
 
-/* const fs = require('fs')
-
-const path = require('path')
-const axios = require('axios');
-
-async function download(){
-    const url = 'https://res.cloudinary.com/dg0d0jmtz/raw/upload/v1720059048/educational-resources/file-1720059047256.pptx'
-    const Path = path.resolve(__dirname, 'file', 'er')
-
-    const res = await axios.get(url, {responseType: 'stream'})
-    res.data.pipe(fs.createWriteStream(Path))
-
-    return new Promise((resolve, reject) => {
-        res.data.on('end', () => resolve('downloaded'));
-        res.data.on('error', (err) => reject(err));
-    })
-
-}
-
-download() */
-
-/* const WolframAlphaAPI = require('@wolfram-alpha/wolfram-alpha-api');
+const WolframAlphaAPI = require('@wolfram-alpha/wolfram-alpha-api');
 const waApi = WolframAlphaAPI('T6YRT5-7G4QGAUYRL');
 
-const formatAnswer = answer => `<strong class="answer">${answer}</strong>`;
-waApi.getShort('20! seconds in years').then((data) => {
-  console.log(formatAnswer(data));
+/* const formatAnswer = answer => `<strong class="answer">${answer}</strong>`;
+waApi.getFull('20! seconds in years').then((data) => {
+  //console.log(formatAnswer(data));
+
+  console.log(data)
 }).catch(console.error); */
 
+  
+/* 
 [{"time": 88, "asked": false, "correct": 3, "options": ["شكل خماسي يحوي زوايا و اضلاع", "شكل رباعي فيه ضلعان قائمان", "شكل رباعي فيه كل ضلعان متقابلان متوازيان و متساويان و زوياه قائمة", "مربع اضلاعه متعامدة"], "question": "ما هو تعريف المستطيل "}, 
 
 {"time": 210, "asked": false, "correct": 2, "options": ["نجمع زواياه", "نجمع اطوال اضلاعه", "نطرح مساحته من مجموع اطوال اضلاعه"], "question": "إحدى طرق حساب محيط مستطيل هي؟"}]
 
-
-[{"time": 88, "asked": false, "correct": 3, "options": ["شكل خماسي يحوي زوايا و اضلاع", "شكل رباعي فيه ضلعان قائمان", "شكل رباعي فيه كل ضلعان متقابلان متوازيان و متساويان و زوياه قائمة", "مربع اضلاعه متعامدة"], "question": "ما هو تعريف المستطيل "}, {"time": 210, "asked": false, "correct": 2, "options": ["نجمع زواياه", "نجمع اطوال اضلاعه", "نطرح مساحته من مجموع اطوال اضلاعه","نجمع الاضلاع ونقسم على 2"], "question": "إحدى طرق حساب محيط مستطيل هي؟"}]
+[{"time": 88, "asked": false, "correct": 3, "options": ["شكل خماسي يحوي زوايا و اضلاع", "شكل رباعي فيه ضلعان قائمان", "شكل رباعي فيه كل ضلعان متقابلان متوازيان و متساويان و زوياه قائمة", "مربع اضلاعه متعامدة"], "question": "ما هو تعريف المستطيل "}, {"time": 210, "asked": false, "correct": 2, "options": ["نجمع زواياه", "نجمع اطوال اضلاعه", "نطرح مساحته من مجموع اطوال اضلاعه","نجمع الاضلاع ونقسم على 2"], "question": "إحدى طرق حساب محيط مستطيل هي؟"}] */
 
 
 exports.getMonthlyCompetitionWinners = async (req, res) => {
@@ -89,4 +59,55 @@ exports.getMonthlyCompetitionWinners = async (req, res) => {
   };
 
 
+/* 
+  const {translate} = require('@vitalets/google-translate-api')
+  const { text } = translate('كيف نكامل x+1', {to: 'en'})
+  .then(text => console.log(text)) */
 
+  const axios = require('axios');
+
+  const WOLFRAM_ALPHA_APP_ID = 'T6YRT5-7G4QGAUYRL';
+  
+/*   const getWolframAlphaAnswer = async (question) => {
+    try {
+      const response = await axios.get('https://api.wolframalpha.com/v2/query', {
+        params: {
+          input: question,
+          appid: WOLFRAM_ALPHA_APP_ID,
+          output: 'json'
+        }
+      });
+  
+      if (response.data.queryresult.success) {
+        const pods = response.data.queryresult.pods;
+        return pods.map(pod => ({
+          title: pod.title,
+          content: pod.subpods.map(subpod => subpod.plaintext).join('\n')
+        }));
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching data from Wolfram Alpha:', error);
+      return null;
+    }
+  };
+  
+  // مثال على كيفية استخدام الدالة
+  (async () => {
+    const question = 'how to draw a regular traingle';
+    const answer = await getWolframAlphaAnswer(question);
+    console.log('Answer:', answer);
+  })(); */
+  
+
+const translate = require("google-translate-open-api").default
+
+translate('Ik spreek Engels', { to: 'en'}).then(res => {
+    console.log(res.text);
+    //=> I speak English
+   
+    //=> nl
+}).catch(err => {
+    console.error(err);
+});

@@ -1,4 +1,4 @@
-$(document).ready(function () {
+
     const surveyJson = {
         "id": 1 ,
         "title": "How Big of a Star Wars Fan You Are",
@@ -96,64 +96,4 @@ $(document).ready(function () {
         "firstPageIsStarted": true
     };
 
-    Survey.Serializer.addProperty("question", {
-        name: "score:number"
-    });
-
-    const survey = new Survey.Model(surveyJson);
-
-    survey.onComplete.add((sender) => {
-        console.log(JSON.stringify(sender.data, null, 3));
-    });
-
-    function calculateMaxScore(questions) {
-        let maxScore = 0;
-        questions.forEach((question) => {
-            if (question.score) {
-                maxScore += question.score;
-            }
-        });
-        return maxScore;
-    }
-
-    function calculateTotalScore(data) {
-        let totalScore = 0;
-        Object.keys(data).forEach((qName) => {
-            const question = survey.getQuestionByValueName(qName);
-            if (question && question.isAnswerCorrect()) {
-                if (question.score) {
-                    totalScore += question.score;
-                }
-            }
-        });
-        return totalScore;
-    }
-    survey.onCompleting.add((sender) => {
-        const totalScore = calculateTotalScore(sender.data);
-        const maxScore = calculateMaxScore(sender.getAllQuestions());
-
-        sender.setValue("maxScore", maxScore);
-        sender.setValue("totalScore", totalScore);
-    });
-
-    survey.onComplete.add((sender) => {
-        const results = {
-            quizId: surveyJson.id,  // التأكد من وجود معرف الكويز
-            userAnswers: sender.data,
-            userScore: sender.getValue('totalScore'),
-            maxScore: sender.getValue('maxScore')
-        };
-console.log(JSON.stringify(results, null, 3));
-        // إرسال النتائج إلى الخادم
-        $.post('/quiz/submit', results)
-            .done((response) => {
-                window.location.href = `/quiz/results/${response.quizId}/${response.userScore}`;
-            })
-            .fail((error) => {
-                alert('There was an error submitting your results. Please try again.');
-            });
-    });
-
-    $("#surveyElement").Survey({ model: survey });
-});
-    
+ 

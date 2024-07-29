@@ -1,0 +1,119 @@
+<%- include('./partial/head.ejs') %>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/7.0.0/polyfill.min.js"></script>
+  <script>
+    window.MathJax = {
+      loader: { load: ['input/tex', 'output/chtml', 'input/mml'] },
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
+  </head>
+
+  <body>
+
+    <div class="container mt-5 border border-2 border-info-subtle">
+      <h1>Student Answers</h1>
+      <form id="questionForm">
+        <div class="form-group">
+          <label for="questionInput">اسأل سؤالك"</label>
+          <input type="text" class="form-control" id="questionInput" placeholder="اكتب سؤالك هنا..">
+        </div>
+        <button type="submit" class="btn btn-primary my-3" id="submitButton">ارسال</button>
+      </form>
+      <div id="loadingMessage" class="my-3" style="display: none;">جاري جلب الإجابة...</div>
+      <div id="answersContainer" class="my-5">
+        <% if (error) { %>
+          <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+        <% answers.forEach(answer => { %>
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title"><%= answer.title %></h5>
+              <p class="card-text"><%= answer.content.replace(/\n/g, '<br>') %></p>
+              <div class="mathml"><%= answer.mathML %></div>
+              <p class="card-text">خطوات الحل: <%= answer.steps.replace(/\n/g, '<br>') %></p>
+              <% if (answer.images && answer.images.length > 0) { %>
+                <% answer.images.forEach(image => { %>
+                  <img src="<%= image %>" class="img-fluid" />
+                <% }) %>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <script lang="text/javascript" src="/library/jquery.min.js"></script>
+  
+    <script>
+      $('#questionForm').on('submit', function(e) {
+        e.preventDefault();
+        const question = $('#questionInput').val();
+  
+        if (!question.trim()) {
+          alert('الرجاء إدخال سؤال صالح');
+          return;
+        }
+  
+        $('#loadingMessage').show();
+        $('#questionInput').prop('disabled', true);
+        $('#submitButton').prop('disabled', true);
+  
+        $.ajax({
+          url: '/wolfram/ask',
+          type: 'POST',
+          data: JSON.stringify({ question }),
+          contentType: 'application/json',
+          success: function(response) {
+            $('#loadingMessage').hide();
+            $('#questionInput').prop('disabled', false);
+            $('#submitButton').prop('disabled', false);
+            const answersContainer = $('#answersContainer');
+            answersContainer.empty();
+            response.answer.forEach(answer => {
+              const answerCard = `
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <h5 class="card-title">${answer.title}</h5>
+                    <p class="card-text">${answer.content.replace(/\n/g, '<br>')}</p>
+                    <div class="mathml">${answer.mathML}</div>
+                    <p class="card-text">خطوات الحل: ${answer.steps.replace(/\n/g, '<br>')}</p>
+                    ${answer.images ? answer.images.map(img => `<img src="${img}" class="img-fluid" />`).join('') : ''}
+                  </div>
+                </div>
+              `;
+              answersContainer.append(answerCard);
+            });
+            MathJax.typeset(); // إعادة تنسيق MathJax
+          },
+          error: function(xhr) {
+            $('#loadingMessage').hide();
+            $('#questionInput').prop('disabled', false);
+            $('#submitButton').prop('disabled', false);
+            const answersContainer = $('#answersContainer');
+            answersContainer.empty();
+            const errorCard = `
+              <div class="alert alert-danger">${xhr.responseJSON.error}</div>
+            `;
+            answersContainer.append(errorCard);
+          }
+        });
+      });
+    </script>
+
+
+    <script>
+      // تأخير التنفيذ للتأكد من معالجة MathJax
+      setTimeout(function () {
+        MathJax.typesetPromise().catch(function (err) {
+          console.error('MathJax typeset failed: ' + err.message);
+        });
+      }, 500)
+
+    </script>
+
+    <%- include('./partial/end.ejs') %>

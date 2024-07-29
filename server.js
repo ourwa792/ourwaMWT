@@ -6,6 +6,10 @@ const flash = require('connect-flash')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const methodOverride = require('method-override')
+const helmet = require('helmet');
+const compression = require('compression');
+
+const ws = require('ws')
 
 
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
@@ -15,8 +19,35 @@ var store = new SequelizeStore({
     db: sequelize,
     tableName: 'sessionMWT'
 })
- 
-const app = express()
+
+const app = express();
+
+
+const wss = new ws.Server({port:5000});
+
+
+// WebSocket connection handling with origin verification
+wss.on('connection', (socket, req) => {
+  const origin = req.headers.origin;
+  if (origin !== 'http://localhost:3000') {
+    socket.terminate();
+    return;
+  }
+
+  console.log('New --- user --- connected');
+  socket.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      wss.clients.forEach(client => {
+        if (client !== socket && client.readyState === ws.OPEN) {
+          client.send(JSON.stringify(data));
+        }
+      });
+    } catch (error) {
+      console.error('Invalid message', error);
+    }
+  });
+});
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -45,12 +76,13 @@ const lessonRout = require('./routes/lesson')
 const videoRout = require('./routes/video')
 const resourceRoutes = require('./routes/resources');
 const quizRout = require('./routes/quiz')
-const photoMath = require('./routes/photoMath')
+const wolframRoutes = require('./routes/wolfram');
+const boardRout = require('./routes/board')
 
 app.set('view engine', 'ejs')
 app.set('views', 'views')
 
-const port = process.env.PORT
+const port = process.env.PORT 
 
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
@@ -73,7 +105,7 @@ app.use('/library', express.static(path.join(__dirname, 'public/library'), {
 }));
 app.use(methodOverride('_method')); // إعداد method-override
 
-// app.use('/IMG',express.static(path.join(__dirname, 'IMG')))
+
 app.use(cookieParser(process.env.COOKIE_SECRET))
 
 app.use(morgan('dev'))
@@ -131,8 +163,10 @@ app.use(userRout)
 app.use(lessonRout)
 app.use(videoRout)
 app.use('/resources', resourceRoutes)
-app.use(photoMath)
+app.use('/wolfram', wolframRoutes);
 app.use('/quiz', quizRout)
+app.use(boardRout)
+
 
 app.get('/error', (req, res, next) => {
   const error = new Error('هذا خطأ تجريبي');

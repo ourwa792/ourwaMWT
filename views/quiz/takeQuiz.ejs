@@ -1,14 +1,14 @@
 <%- include('../partial/head.ejs') %>
 
-    <script src="/library/jquery.min.js"></script>
+ <!--    <script src="/library/jquery.min.js"></script>
     <script src="/library/survey.jquery.min.js"></script>
     <script src="/library/survey.jquery.theme.index.min.js"></script>
-    <link rel="stylesheet" href="/css/survey.css" />
+    <link rel="stylesheet" href="/css/survey.css" /> -->
 
-    <!-- <script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/survey-jquery@1.11.7/survey.jquery.min.js"></script>
     <script src="https://unpkg.com/survey-jquery@1.11.7/themes/index.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/survey-jquery@1.11.7/defaultV2.min.css" /> -->
+    <link rel="stylesheet" href="https://unpkg.com/survey-jquery@1.11.7/defaultV2.min.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/7.0.0/polyfill.min.js"></script>
     <script>
@@ -18,8 +18,7 @@
             svg: { fontCache: 'global' }
         };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> 
     </head>
 
     <body>
@@ -35,9 +34,74 @@
         <script>
             $(document).ready(function () {
 
-                const json = <%- JSON.stringify(quiz.quizSchema) %> ;
-                json.id = <%= quiz.id %> ; // تضمين معرف الكويز في JSON      
+                //const json = <%#- JSON.stringify(quiz.quizSchema) %> ;
+                //json.id = <%#= quiz.id %> ; // تضمين معرف الكويز في JSON      
+                
+                const json =  {"pages": [{
+        "name": "startPage", "elements": [
+            {"html": "<p>اختبار في السؤال الاول من اسئلة الوحدة الاولى للصف الثامن قسم الهندسة</p></br></br><i>هل سيحالفك الحظ ؟</i></br><img src='https://res.cloudinary.com/dg0d0jmtz/image/upload/v1722119336/quiz/Screenshot_2024-07-28_002751_cdys4n.png' width='100%' height='auto'></img>", "name": "welcomeMsg", "type": "html"}]}, 
+      
+         {   
+            "elements": [
+                    {
+                    "type": "imagepicker",
+                    "name": "question1",
+                    "title": "ماهو ناتج ما يلي",
+                    "correctAnswer": "Image 2",
+                    "score": 2,
+                    "choices": [
+                        {
+                        "value": "Image 1",
+                        "imageLink": "https://res.cloudinary.com/dg0d0jmtz/image/upload/v1722118991/quiz/Screenshot_2024-07-28_002046_czxtpu.png"
+                        },
+                        {
+                        "value": "Image 2",
+                        "imageLink": "https://res.cloudinary.com/dg0d0jmtz/image/upload/v1722118989/quiz/Screenshot_2024-07-28_002105_mrhact.png"
+                        },
+                        {
+                        "value": "Image 3",
+                        "imageLink": "https://res.cloudinary.com/dg0d0jmtz/image/upload/v1722118988/quiz/Screenshot_2024-07-28_002124_su9uvz.png"
+                        }
+                    ],
+                    "imageFit": "cover"
+                    }]},
 
+   
+        {"elements": 
+         
+         [{"name": "qSecond", "type": "radiogroup", "score": 2,
+            "title": "\\(P\\) نقطة غير واقعة على المستقيم \\(RS\\), و \\(Q\\) هي صورة \\(P\\) وفق الانسحاب الذي ينقل \\(R\\) إلى \\(S\\). \\n إذن:", 
+            "choices": [{"text": "\\(RSPQ\\) هو متوازي أضلاع", "value": "1"}, 
+            {"text": "\\(PQRS\\) هو متوازي أضلاع", "value": "2"}, 
+            {"text": "\\(RSQP\\) هو متوازي أضلاع", "value": "3"}],
+            "correctAnswer": "3"}]
+        }, 
+            
+        {
+            "elements": [{
+                "type": "boolean",
+                "name": "qThird",
+                "score": 3,
+                "title": "المربع هو معين",
+                "labelTrue": "موافق",
+                "labelFalse": "غير موافق",
+                "correctAnswer": false
+            }]
+        }   
+          
+             
+      
+      ], 
+      
+      
+      
+         "logoPosition": "right", "completedHtml": "<h4>You got <b>{totalScore}</b> out of <b>{maxScore}</b> correct answers.</h4>", "showTimerPanel": "top", "showProgressBar": "top", "firstPageIsStarted": true, "maxTimeToFinishPage": 20, 
+      
+         "completedHtmlOnCondition": [{"html": "You got {totalScore} out of {maxScore} points.</br></br><h5>ممتاز نتيجتك رائعة !!</h5>", "expression": "{totalScore} >= 14"},
+          
+          {"html": "You got {totalScore} out of {maxScore} points.</br></br><i>لا بأس بإمكانك التحسن</i>", "expression": "{totalScore} = 13 || {totalScore} = 12 || {totalScore} = 11"},
+          
+          {"html": "You got {totalScore} out of {maxScore} points.</br></br><i>يجب عليك الدراسة بشكل اكبر</i>", "expression": "{totalScore} <= 10"}]}
 
 
 

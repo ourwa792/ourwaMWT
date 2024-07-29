@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+
+    <link rel="stylesheet" href="/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="/css/board.css">
+</head>
+<body class="container border border-info">
+    <%- include('./partial/navBar.ejs') %>
+    <div class="container text-center">
+        <h3>اللوح التشاركي</h3>
+    </div>
+
+    <div class="container text-center canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div id="red" style="height: 50px; width: 50px; display: inline-block; margin: 5px; background-color: red;" data-color="red"></div>
+    <div id="green" style="height: 50px; width: 50px; display: inline-block; margin: 5px; background-color: rgb(11, 224, 36);" data-color="green"></div>
+    <div id="blue" style="height: 50px; width: 50px; display: inline-block; margin: 5px; background-color: rgb(35, 96, 228);" data-color="blue"></div>
+   
+    <div id="eraser" style="height: 50px; width: 50px; display: inline-block; margin: 5px; background-image: url('/icon/iconEraser.png'); background-size: 50px 50px;" data-color="#f0f8ff"></div>
+
+    <br>
+
+    <input type="range" max="20" min="1" id="slider" value="3">
+   
+    <script lang="text/javascript" src="/js/board.js"></script>
+
+
+<%- include('./partial/end.ejs') %>
